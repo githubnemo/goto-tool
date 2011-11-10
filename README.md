@@ -3,6 +3,27 @@
 Associates your favourite long filesystem paths with short names
 and makes it easy for you to go to them.
 
+## Setup
+
+Put the `goto-tool` python script into your `~/bin` folder or some
+other suitable folder in your `$PATH` and make it executable.
+
+	cp goto-tool ~/bin
+	chmod u+x ~/bin/goto-tool
+
+After that, edit your shell configuration, for example `~/.bashrc` or
+`~/.zshrc` and source the contents of the `goto.bash` file or
+include them directly.
+
+Add the following line at the end of your configuration file to include
+the .bash file in your configuration:
+
+	. /path/to/goto.bash
+
+That's all. Now you're able to use the `goto` command as shown in the
+Examples section.
+
+
 ## Examples
 
 Add a path:
