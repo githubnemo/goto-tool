@@ -23,6 +23,11 @@ the .bash file in your configuration:
 That's all. Now you're able to use the `goto` command as shown in the
 Examples section.
 
+If you want tab completion for the available shortcuts in the `goto`
+and the `goto-tools` command, source the `goto.completion` file
+in your `~/.bash_completion` file like this:
+
+	. /path/to/goto.completion
 
 ## Examples
 
