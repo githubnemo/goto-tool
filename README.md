@@ -54,4 +54,4 @@ Removing entries:
 Listing entries:
 
 	~$ goto-tool list
-	{'ubin': '/usr/bin'}
+	ubin: /usr/bin
