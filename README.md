@@ -55,3 +55,9 @@ Listing entries:
 
 	~$ goto-tool list
 	ubin: /usr/bin
+
+Using gorectories with other commands:
+
+	~$ ls $(goget project)
+	... contents of project directory ...
+

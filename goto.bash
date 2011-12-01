@@ -6,3 +6,7 @@ goto() {
 		cd $DIR
 	fi
 }
+
+goget() {
+	DIR=$(goto-tool get $1) && echo $DIR
+}

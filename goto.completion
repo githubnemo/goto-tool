@@ -23,6 +23,21 @@ _goto-tool() {
 complete -F _goto-tool goto-tool
 
 
+have goget &&
+_goget() {
+    COMPREPLY=()
+    local cur prev entries
+    _get_comp_words_by_ref cur prev
+
+	if [[ "$prev" == "goget" ]]; then
+            entries=$( goto-tool list | cut -d ":" -f 1 )
+            COMPREPLY=( $( compgen -W "$entries" -- "$cur" ) )
+		return 0
+	fi
+} &&
+complete -F _goget goget
+
+
 have goto &&
 _goto() {
     COMPREPLY=()
