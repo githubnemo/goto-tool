@@ -43,6 +43,12 @@ Go to the path:
 	/my/very/long/path/to/my/project$ ls
 	...
 
+Go to a directory relativ to the path:
+
+	~$ goto project subdir/anotherSubdir
+	/my/very/long/path/to/my/project/subdir/anotherSubdir$ ls
+	...
+
 Removing entries:
 
 	~$ goto-tool rm project
@@ -60,4 +66,3 @@ Using gorectories with other commands:
 
 	~$ ls $(goget project)
 	... contents of project directory ...
-
