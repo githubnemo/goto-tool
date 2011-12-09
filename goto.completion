@@ -27,15 +27,27 @@ have goget &&
 _goget() {
     COMPREPLY=()
     local cur prev entries
-    _get_comp_words_by_ref cur prev
+    _get_comp_words_by_ref -n :  cur prev words cword
 
 	if [[ "$prev" == "goget" ]]; then
-            entries=$( goto-tool list | cut -d ":" -f 1 )
-            COMPREPLY=( $( compgen -W "$entries" -- "$cur" ) )
-		return 0
+        entries=$( goto-tool list | cut -d ":" -f 1 )
+        compopt +o nospace &>/dev/null
+        COMPREPLY=( $( compgen -W "$entries" -- "$cur" ) )
+
+    elif [ "${#words[@]}" -eq 3 ]; then
+        # completion for the optional subdir parameter
+
+        subdir=${cur/:-/}
+        dir=$( goto-tool get "$prev" )
+        dirs=$( compgen -o dirnames  "$dir/$cur" | while read comp; do
+                echo ${comp#$dir/}/; done )
+
+        COMPREPLY=( $( compgen -W "$dirs" -- "$cur" ) )
 	fi
+
+	return 0
 } &&
-complete -F _goget goget
+complete -o nospace -F _goget goget
 
 
 have goto &&

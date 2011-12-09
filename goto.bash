@@ -18,5 +18,5 @@ goto() {
 }
 
 goget() {
-	DIR=$(goto-tool get $1) && echo $DIR
+	DIR=$(goto-tool get $1) && echo $DIR${2:+/$2}
 }
