@@ -81,7 +81,7 @@ def fatal(msg):
 
 
 def usage():
-	fatal("Usage: %s [get <name> | list | add <name> <path> | rm <name>]" % (
+	fatal("Usage: %s [get <name> | list | add <name> <path> | rm <name> | path]" % (
 		sys.argv[0],))
 
 
@@ -99,6 +99,9 @@ def main():
 
 	elif len(argv) == 2 and argv[1] == "list":
 		list_directories()
+
+	elif len(argv) == 2 and argv[1] == "path":
+		print goto_file_path()
 
 	else:
 		usage()
