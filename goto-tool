@@ -22,7 +22,9 @@ def read_goto_file():
 	except OSError:
 		return {}
 
-	smap = lambda x: map(lambda e: e.strip(), x)
+	def smap(x):
+		y = map(lambda e: e.strip(), x)
+		return y[0], y[1:]
 
 	try:
 		tuples = (smap(escape_split(n,':',1)) for n in file(path, 'r').readlines())
@@ -36,7 +38,7 @@ def read_goto_file():
 def write_goto_file(dirs):
 	path = goto_file_path()
 
-	data = "\n".join(["%s: %s" % (n) for n in dirs.items()])
+	data = "\n".join(["%s: %s" % (key, ":".join(props)) for (key,props) in dirs.items()])
 
 	try:
 		file(path, 'w').write(data)
@@ -47,7 +49,7 @@ def write_goto_file(dirs):
 def print_directory_by_name(dirname):
 	dirs = read_goto_file()
 	try:
-		print dirs[dirname]
+		print dirs[dirname][0]
 	except KeyError:
 		fatal("Entry '%s' not found." % (dirname,))
 
@@ -58,9 +60,9 @@ def add_directory(name, path):
 		os.stat(path)
 	except OSError:
 		fatal('Path is not accessible: %s' % (path,))
-	dirs[name] = os.path.abspath(path)
+	dirs[name] = [os.path.abspath(path)]
 	write_goto_file(dirs)
-	print "Entry '%s' added, points to '%s'." % (name, dirs[name])
+	print "Entry '%s' added, points to '%s'." % (name, path)
 
 
 def rm_directory(name):
@@ -77,7 +79,7 @@ def rm_directory(name):
 
 def list_directories():
 	dirs = read_goto_file()
-	print "\n".join(["%s: %s" % n for n in dirs.items()])
+	print "\n".join(["%s: %s" % (key,path) for (key,(path,)) in dirs.items()])
 
 
 def fatal(msg):
