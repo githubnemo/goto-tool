@@ -2,7 +2,12 @@
 
 import sys
 import os
+import re
 from xdg.BaseDirectory import xdg_config_home
+
+
+def escape_split(what, sep, splits):
+	return re.split(r"(?<!\\)" + sep, what, splits)
 
 
 def goto_file_path():
@@ -20,7 +25,7 @@ def read_goto_file():
 	smap = lambda x: map(lambda e: e.strip(), x)
 
 	try:
-		tuples = (smap(n.split(':',1)) for n in file(path, 'r').readlines())
+		tuples = (smap(escape_split(n,':',1)) for n in file(path, 'r').readlines())
 	except IOError as e:
 		fatal("Something went wrong while opening the file '%s': %s" % (
 				e, path))
