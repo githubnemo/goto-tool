@@ -14,7 +14,10 @@ def escape_split(what, sep, splits):
 
 
 def goto_file_path():
-	return os.path.join(xdg_config_home, 'goto_favourites.list')
+	try:
+		return os.environ['GOTO_FILE']
+	except KeyError:
+		return os.path.join(xdg_config_home, 'goto_favourites.list')
 
 
 def read_goto_file():
