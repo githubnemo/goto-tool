@@ -7,6 +7,7 @@ from xdg.BaseDirectory import xdg_config_home
 
 
 FIELD_SEPARATOR = ':'
+ELEMENTS_PER_ROW = 3	# Attributes per row (everything but the name)
 
 
 def escape_split(what, sep, splits):
@@ -20,7 +21,24 @@ def goto_file_path():
 		return os.path.join(xdg_config_home, 'goto_favourites.list')
 
 
+def fill_list(l, count):
+	if len(l) >= count:
+		return l
+
+	diff = count - len(l)
+
+	return l + ([''] * diff)
+
+
 def read_goto_file():
+	"""
+	Return stored directories as dictionary. The key is the name of the
+	entry, the value is a list of properties ordered like this:
+	path, access date, access count.
+
+	Example:
+	{'ex1':['/home/me/ex1','11223344','10']}
+	"""
 	path = goto_file_path()
 
 	try:
@@ -30,10 +48,11 @@ def read_goto_file():
 
 	def smap(x):
 		y = map(lambda e: e.strip(), x)
-		return y[0], y[1:]
+
+		return y[0], fill_list(y[1:], ELEMENTS_PER_ROW)
 
 	try:
-		tuples = (smap(escape_split(n,FIELD_SEPARATOR,1)) for n in file(path, 'r').readlines())
+		tuples = (smap(escape_split(n,FIELD_SEPARATOR,ELEMENTS_PER_ROW)) for n in file(path, 'r').readlines())
 	except IOError as e:
 		fatal("Something went wrong while opening the file '%s': %s" % (
 				e, path))
@@ -85,7 +104,7 @@ def rm_directory(name):
 
 def list_directories():
 	dirs = read_goto_file()
-	print "\n".join(["%s: %s" % (key,path) for (key,(path,)) in dirs.items()])
+	print "\n".join(["%s: %s" % (key,path) for (key,(path,date,count)) in dirs.items()])
 
 
 def fatal(msg):
