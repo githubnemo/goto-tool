@@ -6,6 +6,9 @@ import re
 from xdg.BaseDirectory import xdg_config_home
 
 
+FIELD_SEPARATOR = ':'
+
+
 def escape_split(what, sep, splits):
 	return re.split(r"(?<!\\)" + sep, what, splits)
 
@@ -27,7 +30,7 @@ def read_goto_file():
 		return y[0], y[1:]
 
 	try:
-		tuples = (smap(escape_split(n,':',1)) for n in file(path, 'r').readlines())
+		tuples = (smap(escape_split(n,FIELD_SEPARATOR,1)) for n in file(path, 'r').readlines())
 	except IOError as e:
 		fatal("Something went wrong while opening the file '%s': %s" % (
 				e, path))
@@ -38,7 +41,7 @@ def read_goto_file():
 def write_goto_file(dirs):
 	path = goto_file_path()
 
-	data = "\n".join(["%s: %s" % (key, ":".join(props)) for (key,props) in dirs.items()])
+	data = "\n".join(["%s: %s" % (key, FIELD_SEPARATOR.join(props)) for (key,props) in dirs.items()])
 
 	try:
 		file(path, 'w').write(data)
