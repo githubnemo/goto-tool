@@ -9,6 +9,15 @@ from xdg.BaseDirectory import xdg_config_home
 FIELD_SEPARATOR = ':'
 ELEMENTS_PER_ROW = 3	# Attributes per row (everything but the name)
 
+"""
+Current fields are:
+
+	key, path, access date, access count
+
+Therefore the elements are:
+
+	path, access date, access count
+"""
 
 def escape_split(what, sep, splits):
 	return re.split(r"(?<!\\)" + sep, what, splits)
