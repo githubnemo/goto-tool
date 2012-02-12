@@ -1,6 +1,6 @@
 
 
-have goto-tool &&
+#have goto-tool &&
 _goto-tool() {
     COMPREPLY=()
     local cur prev entries
@@ -23,7 +23,7 @@ _goto-tool() {
 complete -F _goto-tool goto-tool
 
 
-have goget &&
+#have goget &&
 _goget() {
     COMPREPLY=()
     local cur prev entries
@@ -50,7 +50,7 @@ _goget() {
 complete -o nospace -F _goget goget
 
 
-have goto &&
+#have goto &&
 _goto() {
     COMPREPLY=()
     local cur prev entries
