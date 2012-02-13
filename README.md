@@ -66,3 +66,6 @@ Using gorectories with other commands:
 
 	~$ ls $(goget project)
 	... contents of project directory ...
+
+	~$ vim $(goget project foo/bar.c)
+	... editing file foo/bar.c in projects directory ...
