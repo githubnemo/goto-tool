@@ -39,8 +39,13 @@ _goget() {
 
         subdir=${cur/:-/}
         dir=$( goto-tool get "$prev" )
-        dirs=$( compgen -o dirnames  "$dir/$cur" | while read comp; do
-                echo ${comp#$dir/}/; done )
+
+        # Get dirs and files in the resolved path + appended path.
+        # Append a / to every completion target if it's a directory.
+        dirs=$( compgen -o default "$dir/$cur" | while read comp; do
+                x="";
+                if [ -d "$comp" ]; then x="/"; fi;
+                echo ${comp#$dir/}$x; done )
 
         COMPREPLY=( $( compgen -W "$dirs" -- "$cur" ) )
 	fi
