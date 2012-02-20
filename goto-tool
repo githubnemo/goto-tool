@@ -133,6 +133,19 @@ def rm_directory(name):
 	print "Entry '%s' removed." % (name,)
 
 
+def mv_directory(oldName, newName):
+	dirs = read_goto_file()
+
+	try:
+		dirs[newName] = dirs[oldName]
+		del dirs[oldName]
+	except KeyError:
+		fatal("Entry '%s' does not exist." % (oldName,))
+
+	write_goto_file(dirs)
+	print "Entry '%s' was rennamed to '%s'." % (oldName, newName)
+
+
 def list_directories():
 	dirs = read_goto_file()
 	print "\n".join(["%s: %s" % (key,path) for (key,(path,date,count)) in dirs.items()])
@@ -156,6 +169,9 @@ def main():
 
 	elif len(argv) == 3 and argv[1] == "rm":
 		rm_directory(argv[2])
+
+	elif len(argv) == 4 and argv[1] == "mv":
+		mv_directory(argv[2],argv[3])
 
 	elif len(argv) == 3 and argv[1] == "get":
 		print_directory_by_name(argv[2])

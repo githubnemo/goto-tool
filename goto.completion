@@ -11,7 +11,7 @@ _goto-tool() {
 	fi
 
 	case $prev in
-        get|add|rm)
+        get|add|rm|mv|use)
 			entries=$( goto-tool list | cut -d ":" -f 1 )
 			COMPREPLY=( $( compgen -W "$entries" -- "$cur" ) )
             return 0
