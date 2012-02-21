@@ -1,0 +1,27 @@
+.TH goto 1 "Feburary 21, 2012" "version 1.0-rc2" "USER COMMANDS"
+.SH NAME
+goto \- Change to a directory stored using the goto-tool
+.SH SYNOPSIS
+.B goto
+<name>
+.SH DESCRIPTION
+After storing a directory under a shorter name using goto-tool(1), one can use
+goto(1) to jump to the directory by the stored name.
+.PP
+goto(1) is no real user command but a function defined in the shell to achieve
+the directory changing.
+.SH EXAMPLES
+.TP
+Add the projects folder in your home directory under the name projects
+goto-tool add projects ~/projects
+.nf
+goto projects
+.PP
+The current directory is now ~/projects.
+.SH EXIT STATUS
+goto returns a zero exit status if no error occured. If the read or write
+of the goto-tool database failed, it returns one as exit status.
+.SH AUTHOR
+nemo (nemo (at) ikkoku.de)
+.SH SEE ALSO
+goto-tool(1) goget(1)
