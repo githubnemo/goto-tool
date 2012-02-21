@@ -3,7 +3,7 @@
 goto-tool \- Manage your favourite directories by names
 .SH SYNOPSIS
 .B goto-tool
-[get <name> | list | add <name> <path> | rm <name> | mv <name1> <name2>]
+[get <name> | list | add <name> <path> | rm <name> | mv <name1> <name2> | path]
 .SH DESCRIPTION
 Long filesystem paths are hard to type and to remember, even with features
 like tab completion. This tool tries to compensate this by managing your
@@ -29,6 +29,17 @@ Remove the path identified by the given name from the list.
 .TP
 mv <name1> <name2>
 Renames the entry identified by name1 and renames it to name2.
+.TP
+path
+Prints the path of the database of goto-tool(1).
+.SH ENVIRONMENT
+\fIGOTO_FILE\fR
+.RS 4
+Using this environment variable one can set an alternative database file.
+If it's not given, the default mentioned in FILES is used.
+.RE
+.SH FILES
+XDG_CONFIG_HOME/goto_favourites.list
 .SH EXAMPLES
 .TP
 Add the projects folder in your home directory under the name projects
