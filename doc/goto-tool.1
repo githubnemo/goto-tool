@@ -1,0 +1,51 @@
+.TH goto-tool 1 "Feburary 21, 2012" "version 1.0-rc2" "USER COMMANDS"
+.SH NAME
+goto-tool \- Manage your favourite directories by names
+.SH SYNOPSIS
+.B goto-tool
+[get <name> | list | add <name> <path> | rm <name> | mv <name1> <name2>]
+.SH DESCRIPTION
+Long filesystem paths are hard to type and to remember, even with features
+like tab completion. This tool tries to compensate this by managing your
+favourite (long) directory paths by a shorter name.
+.PP
+This tool is the foundation for other tools like goget(1) and goto(1).
+.SH OPTIONS
+.TP
+get <name>
+Prints the path associated with the given name
+.TP
+list
+Prints all the stored names and their respective paths.
+.TP
+add <name> <path>
+Stores the given path under the given name in the list and makes it possible
+to retrieve the path with that name using the 'get' command.
+The given path is expanded, that is, if you're passing '.' as the path,
+the full path to the current directory starting from / is used.
+.TP
+rm <name>
+Remove the path identified by the given name from the list.
+.TP
+mv <name1> <name2>
+Renames the entry identified by name1 and renames it to name2.
+.SH EXAMPLES
+.TP
+Add the projects folder in your home directory under the name projects
+goto-tool add projects ~/projects
+.TP
+Retrieving the path of the entry named 'projects'
+goto-tool get projects
+.TP
+Rename the name 'projects' to 'oldprojects'
+goto-tool mv projects oldprojects
+.TP
+Remove the entry identified by the name 'oldprojects'
+goto-tool rm oldprojects
+.SH EXIT STATUS
+goto-tool returns zero if no error occured. If the read or the write operation
+to the file which holds the entries fails, the exit status will be one.
+.SH AUTHOR
+nemo (nemo (at) ikkoku.de)
+.SH SEE ALSO
+goto(1) goget(1)
