@@ -157,7 +157,7 @@ def fatal(msg):
 
 
 def usage():
-	fatal("Usage: %s [get <name> | list | add <name> <path> | rm <name>]" % (
+	fatal("Usage: %s [get <name> | list | add <name> <path> | rm <name> | path]" % (
 		sys.argv[0],))
 
 
