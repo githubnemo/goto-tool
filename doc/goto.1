@@ -3,10 +3,12 @@
 goto \- Change to a directory stored using the goto-tool
 .SH SYNOPSIS
 .B goto
-<name>
+<name> [<path>]
 .SH DESCRIPTION
 After storing a directory under a shorter name using goto-tool(1), one can use
-goto(1) to jump to the directory by the stored name.
+goto(1) to jump to the directory by the stored name. If an optional path is
+given, goto(1) resolves a path by the given name and appends the given path
+to the resolved path.
 .PP
 goto(1) is no real user command but a function defined in the shell to achieve
 the directory changing.
@@ -18,6 +20,11 @@ goto-tool add projects ~/projects
 goto projects
 .PP
 The current directory is now ~/projects.
+.TP
+Using the optional path parameter to move in to a subdirectory of a stored directory
+goto projects myproject
+.PP
+The current directory is now ~/projects/myproject
 .SH EXIT STATUS
 goto returns a zero exit status if no error occured. If the read or write
 of the goto-tool database failed, it returns one as exit status.
