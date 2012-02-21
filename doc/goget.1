@@ -1,0 +1,34 @@
+.TH goget 1 "Feburary 21, 2012" "version 1.0-rc2" "USER COMMANDS"
+.SH NAME
+goget \- Retrieve a directory or file name by name
+.SH SYNOPSIS
+.B goget
+<name> [<path>]
+.SH DESCRIPTION
+After storing a directory under a shorter name using goto-tool(1), one can use
+goget(1) to retrieve and print the path to that directory using the stored name.
+.PP
+If an optional path is given, goget(1) resolves the path of the directory
+identified by the given name and appends the optional path to the resolved path.
+.PP
+goget(1) is no real user command but a function defined in the shell.
+.SH EXAMPLES
+.TP
+Add the projects folder in your home directory under the name projects
+goto-tool add projects ~/projects
+.nf
+goget projects
+.PP
+Prints '/home/blah/projects'.
+.TP
+Using the optional path parameter to append a file in a subdirectory of a stored directory
+goget projects myproject/foo.txt
+.PP
+Prints '/home/blah/projects/myproject/foo.txt'
+.SH EXIT STATUS
+goget returns a zero exit status if no error occured. If the read or write
+of the goto-tool database failed, it returns one as exit status.
+.SH AUTHOR
+nemo (nemo (at) ikkoku.de)
+.SH SEE ALSO
+goto-tool(1) goto(1)
