@@ -79,6 +79,9 @@ def read_goto_file():
 def write_goto_file(dirs):
 	path = goto_file_path()
 
+	if not os.path.exists(path):
+		os.makedirs(os.path.dirname(path))
+
 	data = "\n".join(["%s: %s" % (key, FIELD_SEPARATOR.join(props)) for (key,props) in dirs.items()])
 
 	try:
