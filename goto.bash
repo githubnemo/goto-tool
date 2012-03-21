@@ -6,15 +6,15 @@ goto() {
 		return 1
 	fi
 
-	DIR=$(goto-tool get $1)
+	DIR=$(goto-tool get "$1")
 
 	if [ "$?" -eq 0 ]; then
-		goto-tool use $1 >/dev/null
+		goto-tool use "$1" >/dev/null
 
 		if [ "$#" -gt 1 ]; then
-			cd $DIR/$2
+			cd "$DIR"/"$2"
 		else
-			cd $DIR
+			cd "$DIR"
 		fi
 	fi
 }
