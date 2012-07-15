@@ -71,23 +71,33 @@ _goto() {
     elif [ "${#words[@]}" -eq 3 ]; then
         # completion for the optional subdir parameter
 
-        subdir=${cur/:-/}
+        # Quote the current input if it needs to be quoted
+        _quote_readline_by_ref "$cur" quoted
+
+        # Determine the subdir according to the given goto dir (prev param)
+        subdir=${quoted/:-/}
         dir=$( goto-tool get "$prev" )
+
+        # Find all directories in the target directory and generate
+        # possible matches.
         dirs=$(
-            compgen -o dirnames  "$dir/$cur" | while read comp; do
+            compgen -o dirnames  "$dir/$quoted" | while read comp; do
                 echo ${comp#$dir/}/
-            done | tr "\n" ":"
+            done
         )
-        dirs=${dirs%:}
 
-        REPL=$( IFS=":" compgen -W "$dirs" -- "$cur" )
+        # Gather all directory matches according to the current needle.
+        # Be careful only to slice by newline to not truncate those
+        # elements which have whitespaces in them.
+        REPL=$( IFS=$'\n' compgen -W "$dirs" -- "$quoted" )
+
+        # Quote each result found
         COMREPLY=()
-
         local i=0
-        IFS="
-"
+        IFS=$'\n'
         for reply in $REPL; do
-            COMPREPLY[$i]="$reply"
+            _quote_readline_by_ref "$reply" qreply
+            COMPREPLY[$i]="$qreply"
             i=$(($i + 1))
         done
 	fi
