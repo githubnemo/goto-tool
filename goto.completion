@@ -35,6 +35,15 @@ _quoted_godir_comreply() {
     done
 }
 
+# Set COMPREPLY according to the given current needle ($1) on the
+# list of possible goto targets.
+_complete_goto_targets() {
+    cur="$1"
+    entries=$( goto-tool list | cut -d ":" -f 1 )
+    compopt +o nospace &>/dev/null
+    COMPREPLY=( $( compgen -W "$entries" -- "$cur" ) )
+}
+
 
 #have goget &&
 _goget() {
@@ -43,9 +52,7 @@ _goget() {
     _get_comp_words_by_ref -n :  cur prev words cword
 
 	if [[ "$prev" == "goget" ]]; then
-        entries=$( goto-tool list | cut -d ":" -f 1 )
-        compopt +o nospace &>/dev/null
-        COMPREPLY=( $( compgen -W "$entries" -- "$cur" ) )
+        _complete_goto_targets "$cur"
 
     elif [ "${#words[@]}" -eq 3 ]; then
         # completion for the optional subdir parameter
@@ -72,6 +79,7 @@ _goget() {
 complete -o nospace -F _goget goget
 
 
+
 #have goto &&
 _goto() {
     COMPREPLY=()
@@ -80,10 +88,7 @@ _goto() {
 
 	if [[ "$prev" == "goto" ]]; then
         # completion for goto directories
-
-        entries=$( goto-tool list | cut -d ":" -f 1 )
-        compopt +o nospace &>/dev/null
-        COMPREPLY=( $( compgen -W "$entries" -- "$cur" ) )
+        _complete_goto_targets "$cur"
 
     elif [ "${#words[@]}" -eq 3 ]; then
         # completion for the optional subdir parameter
