@@ -73,10 +73,23 @@ _goto() {
 
         subdir=${cur/:-/}
         dir=$( goto-tool get "$prev" )
-        dirs=$( compgen -o dirnames  "$dir/$cur" | while read comp; do
-                echo ${comp#$dir/}/; done )
+        dirs=$(
+            compgen -o dirnames  "$dir/$cur" | while read comp; do
+                echo ${comp#$dir/}/
+            done | tr "\n" ":"
+        )
+        dirs=${dirs%:}
 
-        COMPREPLY=( $( compgen -W "$dirs" -- "$cur" ) )
+        REPL=$( IFS=":" compgen -W "$dirs" -- "$cur" )
+        COMREPLY=()
+
+        local i=0
+        IFS="
+"
+        for reply in $REPL; do
+            COMPREPLY[$i]="$reply"
+            i=$(($i + 1))
+        done
 	fi
 	return 0
 } &&
