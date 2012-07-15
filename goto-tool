@@ -139,7 +139,7 @@ def add_directory(name, path, soft=False):
 	dirs[name] = [soft and resolve_softlink(path) or os.path.abspath(path)]
 
 	write_goto_file(dirs)
-	print "Entry '%s' added, points to '%s'." % (name, path)
+	print "Entry '%s' added, points to '%s'." % (name, dirs[name][F_PATH])
 
 
 def rm_directory(name):
