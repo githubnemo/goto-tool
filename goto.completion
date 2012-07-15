@@ -23,6 +23,19 @@ _goto-tool() {
 complete -F _goto-tool goto-tool
 
 
+# Escape whitespaces and such in each reply given in $1.
+# Store the result in COMPREPLY.
+_quoted_godir_comreply() {
+    local i=0
+    IFS=$'\n'
+    for reply in $1; do
+        _quote_readline_by_ref "$reply" qreply
+        COMPREPLY[$i]="$qreply"
+        i=$(($i + 1))
+    done
+}
+
+
 #have goget &&
 _goget() {
     COMPREPLY=()
@@ -37,17 +50,21 @@ _goget() {
     elif [ "${#words[@]}" -eq 3 ]; then
         # completion for the optional subdir parameter
 
-        subdir=${cur/:-/}
+        _quote_readline_by_ref "$cur" quoted
+
+        subdir=${quoted/:-/}
         dir=$( goto-tool get "$prev" )
 
         # Get dirs and files in the resolved path + appended path.
         # Append a / to every completion target if it's a directory.
-        dirs=$( compgen -o default "$dir/$cur" | while read comp; do
+        dirs=$( compgen -o default "$dir/$quoted" | while read comp; do
                 x="";
                 if [ -d "$comp" ]; then x="/"; fi;
                 echo ${comp#$dir/}$x; done )
 
-        COMPREPLY=( $( compgen -W "$dirs" -- "$cur" ) )
+        completions=( $( compgen -W "$dirs" -- "$quoted" ) )
+
+        _quoted_godir_comreply "$completions"
 	fi
 
 	return 0
@@ -89,17 +106,10 @@ _goto() {
         # Gather all directory matches according to the current needle.
         # Be careful only to slice by newline to not truncate those
         # elements which have whitespaces in them.
-        REPL=$( IFS=$'\n' compgen -W "$dirs" -- "$quoted" )
+        completions=$( IFS=$'\n' compgen -W "$dirs" -- "$quoted" )
 
         # Quote each result found
-        COMREPLY=()
-        local i=0
-        IFS=$'\n'
-        for reply in $REPL; do
-            _quote_readline_by_ref "$reply" qreply
-            COMPREPLY[$i]="$qreply"
-            i=$(($i + 1))
-        done
+        _quoted_godir_comreply "$completions"
 	fi
 	return 0
 } &&
