@@ -1,4 +1,4 @@
-# Favourite path selector
+# goto myproject
 
 Associates your favourite long filesystem paths with short names
 and makes it easy for you to go to them.
@@ -62,7 +62,7 @@ Listing entries:
 	~$ goto-tool list
 	ubin: /usr/bin
 
-Using gorectories with other commands:
+Using goto directories with other commands:
 
 	~$ ls $(goget project)
 	... contents of project directory ...
