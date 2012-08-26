@@ -3,6 +3,15 @@
 Associates your favourite long filesystem paths with short names
 and makes it easy for you to go to them.
 
+## Dependencies
+
+If you want to use tab completion, you'll need `bash_completion`.
+
+**Ubuntu/Debian** users have it already.
+
+For **Mac OS X**, you can find a detailled installation guide
+[here](http://superuser.com/a/288491).
+
 ## Setup
 
 Put the `goto-tool` python script into your `~/bin` folder or some
@@ -25,7 +34,7 @@ Examples section.
 
 If you want tab completion for the available shortcuts in the `goto`
 and the `goto-tools` command, source the `goto.completion` file
-in your `~/.bash_completion` file like this:
+in your `~/.bashrc` or `~/.bash_completion` on debian/ubuntu like this:
 
 	. /path/to/goto.completion
 
