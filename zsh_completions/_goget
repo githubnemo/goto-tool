@@ -1,0 +1,24 @@
+#compdef goget
+# goget <gotoName> [<subdir/file>]
+
+gotoTargets() {
+  goto-tool list | cut -d ":" -f 1
+}
+
+gotoSubdir() {
+  if (( CURRENT <= 2 )); then
+    return
+  fi
+  goto-tool get "${words[2]}"
+}
+
+_arguments  "1: :(`gotoTargets`)"\
+            "2: path:_files -W $(gotoSubdir)"
+
+# Local Variables:
+# mode: Shell-Script
+# sh-indentation: 2
+# indent-tabs-mode: nil
+# sh-basic-offset: 2
+# End:
+# vim: ft=zsh sw=2 ts=2 et
