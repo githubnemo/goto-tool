@@ -38,6 +38,11 @@ in your `~/.bashrc` or `~/.bash_completion` on debian/ubuntu like this:
 
 	. /path/to/goto.completion
 
+For the ZSH, you may want to add the `zsh_completions` directory to the
+`fpath` in your `.zshrc`. For example:
+
+	fpath=(~/.local/goto-tool/zsh_completions $fpath)
+
 ## Examples
 
 Add a path:
