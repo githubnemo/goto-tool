@@ -76,7 +76,7 @@ If you want tab completion for the `goto` and the `goto-tools` command,
 include the `goto.completion` file in your `~/.bashrc` or `~/.bash_completion`
 on debian/ubuntu like this:
 
-	. ~/.local/goto-tool/goto.completion
+	source ~/.local/goto-tool/goto.completion
 
 ### ZSH
 
