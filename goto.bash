@@ -1,22 +1,28 @@
 # To be sourced in your .bashrc
 
 goto() {
+	local dir
+	local ret
+
 	if [ "$#" -eq 0 ]; then
 		echo "Usage: goto <dirname> [<subpath>]"
 		return 1
 	fi
 
-	DIR=$(goto-tool get "$1")
+	dir=$(goto-tool get "$1")
+	ret=$?
 
-	if [ "$?" -eq 0 ]; then
+	if [ "$ret" -eq 0 ]; then
 		goto-tool use "$1" >/dev/null
 
 		if [ "$#" -gt 1 ]; then
-			cd "$DIR"/"$2"
+			cd "$dir"/"$2"
 		else
-			cd "$DIR"
+			cd "$dir"
 		fi
 	fi
+
+	return $ret
 }
 
 goget() {
