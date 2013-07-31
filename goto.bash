@@ -1,5 +1,7 @@
 # To be sourced in your .bashrc
 
+# $1 godir
+# [$2 directory]
 goto() {
 	local dir
 	local ret
@@ -25,6 +27,25 @@ goto() {
 	return $ret
 }
 
+# $1 godir
+# [$2 file]
 goget() {
-	DIR=$(goto-tool get $1) && goto-tool use $1 >/dev/null && echo $DIR${2:+/$2}
+	local DIR
+
+	if DIR="$(goto-tool get $1)"; then
+		goto-tool use $1 >/dev/null
+
+		echo "$DIR${2:+/$2}"
+	fi
+}
+
+# $1 cmd
+# $2 godir
+# [$3 file]
+gorun() {
+	local dir
+
+	if dir="$(goget $2 $3)"; then
+		$1 $dir
+	fi
 }

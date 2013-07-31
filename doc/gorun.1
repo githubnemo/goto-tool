@@ -1,0 +1,31 @@
+.TH gorun 1 "July 31, 2013" "version 1.0-rc5" "USER COMMANDS"
+.SH NAME
+gorun \- Run a command with a stored directory
+.SH SYNOPSIS
+.B gorun
+<command> <name> [<path>]
+.SH DESCRIPTION
+After storing a directory under a shorter name using goto-tool(1), one can use
+gorun(1) to run a command with said stored directory.
+.PP
+If an optional path is given, gorun(1) resolves the path of the directory
+identified by the given name and appends the optional path to the resolved path
+in the same manner as goget(1) does.
+.PP
+gorun(1) is no real user command but a function defined in the shell.
+.SH EXAMPLES
+.TP
+Add the projects folder in your home directory under the name projects
+goto-tool add projects ~/projects
+.nf
+gorun vim projects foo.txt
+.PP
+Edits the file 'foo.txt' in the folder '~/projects'.
+.TP
+.SH EXIT STATUS
+gorun returns a zero exit status if no error occured. If the read or write
+of the goto-tool database failed, it returns one as exit status.
+.SH AUTHOR
+nemo (nemo (at) ikkoku.de)
+.SH SEE ALSO
+goto-tool(1) goto(1) goget(1)

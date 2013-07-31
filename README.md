@@ -38,10 +38,10 @@ Listing entries:
 
 Using goto directories with other commands:
 
-	~$ ls $(goget project)
+	~$ ls "$(goget project)"
 	... contents of project directory ...
 
-	~$ vim $(goget project foo/bar.c)
+	~$ gorun vim project foo/bar.c
 	... editing file foo/bar.c in projects directory ...
 
 
@@ -89,3 +89,24 @@ To add tab completion support, you may want to add the `zsh_completions`
 directory to the `fpath` in your `.zshrc`. For example:
 
 	fpath=(~/.local/goto-tool/zsh_completions $fpath)
+
+
+### Caveats
+
+There is not much that can go wrong. The only thing that
+may bug you is that there does not seem to be a way to use
+`goget` comfortably in your shell. The reason for this is
+that whitespaces don't mix well with subshell commands.
+
+This won't work:
+
+	$ goto-tool add foo '/foo/bar baz/'
+    $ ls $(goget foo)
+
+This works:
+
+	$ ls "$(goget foo)"
+
+In most cases it is quicker to use `gorun` to achieve the same:
+
+    $ gorun ls foo
