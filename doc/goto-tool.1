@@ -1,4 +1,4 @@
-.TH goto-tool 1 "Feburary 21, 2012" "version 1.0-rc2" "USER COMMANDS"
+.TH goto-tool 1 "December 12, 2013" "version 2.0" "USER COMMANDS"
 .SH NAME
 goto-tool \- Manage your favourite directories by names
 .SH SYNOPSIS
@@ -33,13 +33,13 @@ Renames the entry identified by name1 and renames it to name2.
 path
 Prints the path of the database of goto-tool(1).
 .SH ENVIRONMENT
-\fIGOTO_FILE\fR
+\fIGOTO_DATABASE\fR
 .RS 4
 Using this environment variable one can set an alternative database file.
 If it's not given, the default mentioned in FILES is used.
 .RE
 .SH FILES
-XDG_CONFIG_HOME/goto_favourites.list
+XDG_CONFIG_HOME/goto_tool.sqlite3
 .SH EXAMPLES
 .TP
 Add the projects folder in your home directory under the name projects
