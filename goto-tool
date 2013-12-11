@@ -95,21 +95,6 @@ class deprecated(object):
 		return l + ([''] * diff)
 
 
-	@classmethod
-	def write_goto_file(cls, dirs):
-		path = cls.goto_file_path()
-
-		if not os.path.exists(os.path.dirname(path)):
-			os.makedirs(os.path.dirname(path))
-
-		data = "\n".join(["%s: %s" % (key, cls.FIELD_SEPARATOR.join(props)) for (key,props) in dirs.items()])
-
-		try:
-			file(path, 'w').write(data)
-		except IOError as e:
-			fatal("Something went wrong while writing: %s" % (e))
-
-
 	def removeDbOnException(fun):
 		def decorated(*args, **kwargs):
 			try:
