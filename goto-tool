@@ -257,6 +257,19 @@ def mark_entry_as_used(dirname):
 	print "Entry '%s' marked as used." % (dirname,)
 
 
+def lookup_entry(path):
+	dirs = read_goto_database()
+	matches = [v[F_NAME] for (d,v) in dirs.items() if v[F_PATH] == os.path.abspath(path)]
+
+	if len(matches) == 0:
+		fatal("No entry for path '{}' found.".format(path))
+
+	print "Path '{}' matches the following entries:".format(path)
+
+	for match in matches:
+		print match
+
+
 def resolve_softlink(path):
 	""" make an attempt to get the symlink from the current dir
 	if wanted. If that attempt fails, just return the path. """
@@ -317,7 +330,7 @@ def fatal(msg):
 
 
 def usage():
-	fatal("Usage: %s [get <name> | list | add [--soft] <name> <path> | rm <name> | path]" % (
+	fatal("Usage: %s [get <name> | list | add [--soft] <name> <path> | rm <name> | path | lookup <path>]" % (
 		sys.argv[0],))
 
 
@@ -343,6 +356,9 @@ def main():
 
 	elif len(argv) == 3 and argv[1] == "use":
 		mark_entry_as_used(argv[2])
+
+	elif len(argv) == 3 and argv[1] == "lookup":
+		lookup_entry(argv[2])
 
 	elif len(argv) == 2 and argv[1] == "list":
 		list_directories()
