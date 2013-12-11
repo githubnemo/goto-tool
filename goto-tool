@@ -4,115 +4,255 @@ import sys
 import os
 import re
 import time
+import sqlite3
 
 try:
 	from xdg.BaseDirectory import xdg_config_home
 except ImportError:
 	xdg_config_home = os.path.expanduser('~/.config')
 
-"""
-Current fields are:
+F_PATH = 'path'
+F_NAME = 'name'
+F_ACCESS_TIME = 'last_access'
+F_ACCESS_COUNT = 'usage_count'
 
-	key, path, access date, access count
+class deprecated(object):
 
-Therefore the elements are:
+	"""
+	Current fields are:
 
-	path, access date, access count
-"""
+		key, path, access date, access count
 
-FIELD_SEPARATOR = ':'
-ELEMENTS_PER_ROW = 3	# Attributes per row (everything but the name)
+	Therefore the elements are:
 
-(F_PATH, F_ACCESS_TIME, F_ACCESS_COUNT) = range(ELEMENTS_PER_ROW)
+		path, access date, access count
+	"""
+
+	FIELD_SEPARATOR = ':'
+	ELEMENTS_PER_ROW = 3	# Attributes per row (everything but the name)
+
+	(F_PATH, F_ACCESS_TIME, F_ACCESS_COUNT) = range(ELEMENTS_PER_ROW)
 
 
-def escape_split(what, sep, splits):
-	return re.split(r"(?<!\\)" + sep, what, splits)
+	@classmethod
+	def goto_file_path(cls):
+		try:
+			return os.path.abspath(os.environ['GOTO_FILE'])
+		except KeyError:
+			return os.path.join(xdg_config_home, 'goto_favourites.list')
 
 
-def goto_file_path():
+	@classmethod
+	def escape_split(cls, what, sep, splits):
+		return re.split(r"(?<!\\)" + sep, what, splits)
+
+
+	@classmethod
+	def goto_needs_migration(cls):
+		return os.path.exists(cls.goto_file_path()) and (
+					not os.path.exists(goto_database_path())
+					or os.path.getsize(goto_database_path()) == 0
+				)
+
+
+	@classmethod
+	def read_goto_file(cls):
+		"""
+		Return stored directories as dictionary. The key is the name of the
+		entry, the value is a list of properties ordered like this:
+		path, access date, access count.
+
+		Example:
+		{'ex1':['/home/me/ex1','11223344','10']}
+		"""
+		path = cls.goto_file_path()
+
+		try:
+			os.stat(path)
+		except OSError:
+			return {}
+
+		def smap(x):
+			y = map(lambda e: e.strip(), x)
+
+			return y[0], cls.fill_list(y[1:], cls.ELEMENTS_PER_ROW)
+
+		try:
+			tuples = (smap(cls.escape_split(n, cls.FIELD_SEPARATOR, cls.ELEMENTS_PER_ROW)) for n in file(path, 'r').readlines())
+		except IOError as e:
+			fatal("Something went wrong while opening the file '%s': %s" % (e, path))
+
+		return dict(tuples)
+
+
+	@classmethod
+	def fill_list(cls, l, count):
+		if len(l) >= count:
+			return l
+
+		diff = count - len(l)
+
+		return l + ([''] * diff)
+
+
+	@classmethod
+	def write_goto_file(cls, dirs):
+		path = cls.goto_file_path()
+
+		if not os.path.exists(os.path.dirname(path)):
+			os.makedirs(os.path.dirname(path))
+
+		data = "\n".join(["%s: %s" % (key, cls.FIELD_SEPARATOR.join(props)) for (key,props) in dirs.items()])
+
+		try:
+			file(path, 'w').write(data)
+		except IOError as e:
+			fatal("Something went wrong while writing: %s" % (e))
+
+
+	def removeDbOnException(fun):
+		def decorated(*args, **kwargs):
+			try:
+				return fun(*args, **kwargs)
+			except Exception as e:
+				# Remove uninitialized database in case of error so that
+				# the migration process starts anew the next time.
+				os.unlink(goto_database_path())
+				raise e
+		return decorated
+
+
+	@classmethod
+	@removeDbOnException
+	def migrate_to_database(cls, con):
+		print "migrate_to_database"
+		init_database(con)
+
+		data = cls.read_goto_file()
+
+		c = con.cursor()
+
+		for name, values in data.items():
+			c.execute("""
+				INSERT INTO goto
+					(name, path, last_access, usage_count)
+				VALUES
+					(?, ?, ?, ?)
+				""", (
+					name,
+					values[cls.F_PATH],
+					values[cls.F_ACCESS_TIME],
+					values[cls.F_ACCESS_COUNT]))
+
+		c.close()
+		con.commit()
+
+
+def goto_database_path():
 	try:
-		return os.path.abspath(os.environ['GOTO_FILE'])
+		return os.path.abspath(os.environ['GOTO_DATABASE'])
 	except KeyError:
-		return os.path.join(xdg_config_home, 'goto_favourites.list')
+		return os.path.join(xdg_config_home, 'goto_tool.sqlite3')
 
 
-def fill_list(l, count):
-	if len(l) >= count:
-		return l
-
-	diff = count - len(l)
-
-	return l + ([''] * diff)
+def open_database():
+	con = sqlite3.connect(goto_database_path())
+	con.row_factory = sqlite3.Row
+	return con
 
 
-def read_goto_file():
+def init_database(con):
+	c = con.cursor()
+	c.execute("""
+		CREATE TABLE goto (
+			name text PRIMARY KEY,
+			path text,
+			last_access timestamp,
+			usage_count int
+		)
+	""")
+	c.close()
+
+
+def read_goto_database():
 	"""
 	Return stored directories as dictionary. The key is the name of the
-	entry, the value is a list of properties ordered like this:
-	path, access date, access count.
+	entry, the value is a dict of properties.
 
 	Example:
-	{'ex1':['/home/me/ex1','11223344','10']}
+	{'ex1':{'name': 'ex1', 'path':'/home/me/ex1', 'last_access': 11223344, 'usage_count': 10}}
 	"""
-	path = goto_file_path()
+	con = open_database()
 
-	try:
-		os.stat(path)
-	except OSError:
+	if deprecated.goto_needs_migration():
+		deprecated.migrate_to_database(con)
+
+	cur = con.cursor()
+	res = cur.execute("SELECT COUNT(*) FROM sqlite_master WHERE name='goto' AND type='table'")
+
+	count = res.fetchone()[0]
+
+	if count == 0 or os.path.getsize(goto_database_path()) == 0:
+		init_database(con)
 		return {}
 
-	def smap(x):
-		y = map(lambda e: e.strip(), x)
+	res = cur.execute("SELECT * FROM goto")
+	rows = res.fetchall()
+	con.close()
 
-		return y[0], fill_list(y[1:], ELEMENTS_PER_ROW)
-
-	try:
-		tuples = (smap(escape_split(n,FIELD_SEPARATOR,ELEMENTS_PER_ROW)) for n in file(path, 'r').readlines())
-	except IOError as e:
-		fatal("Something went wrong while opening the file '%s': %s" % (
-				e, path))
-
-	return dict(tuples)
-
-
-def write_goto_file(dirs):
-	path = goto_file_path()
-
-	if not os.path.exists(os.path.dirname(path)):
-		os.makedirs(os.path.dirname(path))
-
-	data = "\n".join(["%s: %s" % (key, FIELD_SEPARATOR.join(props)) for (key,props) in dirs.items()])
-
-	try:
-		file(path, 'w').write(data)
-	except IOError as e:
-		fatal("Something went wrong while writing: %s" % (e))
+	return dict([ (r['name'], r) for r in rows ])
 
 
 def print_directory_by_name(dirname):
-	dirs = read_goto_file()
+	dirs = read_goto_database()
 	try:
 		print dirs[dirname][F_PATH]
 	except KeyError:
 		fatal("Entry '%s' not found." % (dirname,))
 
 
+def update_entry(dirname, **pairs):
+	con = open_database()
+	c = con.cursor()
+	g = globals()
+
+	keys = pairs.keys()
+
+	fields = ['{}=?'.format(g[k]) for k in keys]
+	values = [pairs[k] for k in keys]
+
+	c.execute('UPDATE OR REPLACE goto SET {} WHERE name=?'.format(','.join(fields)), values + [dirname])
+	con.commit()
+	con.close()
+
+
+def add_entry(dirname, path):
+	con = open_database()
+	c = con.cursor()
+	c.execute('REPLACE INTO goto (name,path) VALUES (?,?)', (dirname, path))
+	con.commit()
+	con.close()
+
+
+def delete_entry(dirname):
+	con = open_database()
+	c = con.cursor()
+	c.execute('DELETE FROM goto WHERE name = ?', (dirname,))
+	con.commit()
+	con.close()
+
+
 def mark_entry_as_used(dirname):
-	dirs = read_goto_file()
+	dirs = read_goto_database()
 
 	if not dirs.has_key(dirname):
 		fatal("Entry '%s' not found." % (dirname,))
 
-	dirs[dirname][F_ACCESS_TIME] = str(time.time())
+	count = (dirs[dirname][F_ACCESS_COUNT] or 0) + 1
 
-	count = dirs[dirname][F_ACCESS_COUNT]
-	count = count and int(count) or 0
-	count += 1
-
-	dirs[dirname][F_ACCESS_COUNT] = str(count)
-
-	write_goto_file(dirs)
+	update_entry(dirname,
+			F_ACCESS_TIME=time.time(),
+			F_ACCESS_COUNT=count)
 
 	print "Entry '%s' marked as used." % (dirname,)
 
@@ -129,47 +269,46 @@ def resolve_softlink(path):
 
 def add_directory(name, path, soft=False):
 	""" Don't take abspath if soft=True """
-	dirs = read_goto_file()
+	dirs = read_goto_database()
 
 	try:
 		os.stat(path)
 	except OSError:
 		fatal('Path is not accessible: %s' % (path,))
 
-	dirs[name] = [soft and resolve_softlink(path) or os.path.abspath(path)]
+	path = soft and resolve_softlink(path) or os.path.abspath(path)
+	add_entry(name, path)
 
-	write_goto_file(dirs)
-	print "Entry '%s' added, points to '%s'." % (name, dirs[name][F_PATH])
+	print "Entry '%s' added, points to '%s'." % (name, path)
 
 
 def rm_directory(name):
-	dirs = read_goto_file()
+	dirs = read_goto_database()
 
 	try:
 		del dirs[name]
 	except KeyError:
 		fatal("Entry '%s' does not exist." % (name,))
 
-	write_goto_file(dirs)
+	delete_entry(name)
+
 	print "Entry '%s' removed." % (name,)
 
 
 def mv_directory(oldName, newName):
-	dirs = read_goto_file()
+	dirs = read_goto_database()
 
-	try:
-		dirs[newName] = dirs[oldName]
-		del dirs[oldName]
-	except KeyError:
+	if not dirs.has_key(oldName):
 		fatal("Entry '%s' does not exist." % (oldName,))
 
-	write_goto_file(dirs)
+	update_entry(oldName, F_NAME=newName)
+
 	print "Entry '%s' was rennamed to '%s'." % (oldName, newName)
 
 
 def list_directories():
-	dirs = read_goto_file()
-	print "\n".join(["%s: %s" % (key,path) for (key,(path,date,count)) in dirs.items()])
+	dirs = read_goto_database()
+	print "\n".join(["%s: %s" % (key,row[F_PATH]) for (key,row) in dirs.items()])
 
 
 def fatal(msg):
@@ -209,7 +348,7 @@ def main():
 		list_directories()
 
 	elif len(argv) == 2 and argv[1] == "path":
-		print goto_file_path()
+		print goto_database_path()
 
 	else:
 		usage()
