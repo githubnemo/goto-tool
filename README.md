@@ -17,7 +17,7 @@ Go to the path:
 	/my/very/long/path/to/my/project$ ls
 	...
 
-Go to a directory relativ to the path:
+Go to a directory relative to the path:
 
 	~$ goto project subdir/anotherSubdir
 	/my/very/long/path/to/my/project/subdir/anotherSubdir$ ls
