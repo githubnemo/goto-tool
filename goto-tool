@@ -141,6 +141,8 @@ def goto_database_path():
 
 
 def open_database():
+	if not os.path.exists(os.path.dirname(goto_database_path())):
+		os.makedirs(os.path.dirname(goto_database_path()))
 	con = sqlite3.connect(goto_database_path())
 	con.row_factory = sqlite3.Row
 	return con
