@@ -147,7 +147,6 @@ def acquire_lock(goto_path):
 
 	lockfile_path = os.path.join(os.path.dirname(goto_path), 'goto.lock')
 	lockfile = open(lockfile_path, 'w')
-	print "Waiting for lock for", lockfile.fileno()
 	fcntl.lockf(lockfile.fileno(), fcntl.LOCK_EX)
 
 def read_goto_file():
@@ -161,12 +160,8 @@ def read_goto_file():
 	"""
 	path = goto_file_path()
 
-	raw_input("before lock")
-
 	# Acquire goto file lock
 	acquire_lock(path)
-
-	raw_input("after lock acquire")
 
 	if deprecated.goto_needs_migration():
 		deprecated.migrate_to_file()
