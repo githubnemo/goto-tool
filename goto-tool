@@ -6,7 +6,7 @@ import re
 import time
 import fcntl
 
-VERSION='3.0.0'
+VERSION='3.0.1'
 
 try:
 	from xdg.BaseDirectory import xdg_config_home
