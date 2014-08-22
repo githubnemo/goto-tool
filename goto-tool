@@ -66,8 +66,8 @@ class deprecated(object):
 			migrated[key][F_ACCESS_TIME] = unicode(row[DB_F_ACCESS_TIME])
 			migrated[key][F_ACCESS_COUNT] = unicode(row[DB_F_ACCESS_COUNT])
 
-		if deprecated.goto_needs_number_cleanup(migrated):
-			migrated = deprecated.goto_number_cleanup(migrated)
+		if deprecated.goto_dirs_need_number_cleanup(migrated):
+			migrated = deprecated.goto_dirs_number_cleanup(migrated)
 
 		write_goto_file(migrated)
 		os.unlink(deprecated.goto_database_path())
