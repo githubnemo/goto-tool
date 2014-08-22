@@ -27,4 +27,13 @@ fail goto-tool use bar
 fail goto-tool rm bar
 fail goto-tool get bar
 
+# Switch GOTO_FILE to another file, entries should be different.
+must goto-tool add foo /tmp
+must goto-tool get foo
+ALT_GOTO_FILE=`tempfile`
+GOTO_FILE="$ALT_GOTO_FILE" fail goto-tool get foo
+GOTO_FILE="$ALT_GOTO_FILE" must goto-tool add foo /tmp
+GOTO_FILE="$ALT_GOTO_FILE" must goto-tool get foo
+
+
 printok "Everything went well."
