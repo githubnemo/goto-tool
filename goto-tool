@@ -136,6 +136,39 @@ class deprecated(object):
 
 		return dict([ (r['name'], r) for r in rows ])
 
+	@classmethod
+	def goto_needs_number_cleanup(cls, dirs):
+		""" The directory tuples were not initialized properly and the
+			fields for access time and access count may have missing, weird
+			and wrong values. Detect if this is the case.
+		"""
+		for _, t in dirs.items():
+			try:
+				int(t[F_ACCESS_COUNT])
+				int(t[F_ACCESS_TIME])
+			except ValueError:
+				return True
+		return False
+
+	@classmethod
+	def goto_number_cleanup(cls, dirs):
+		""" Apply what is described in goto_needs_number_cleanup. """
+		print >> sys.stderr, "Your goto file needs some cleaning. Cleaning up."
+		fixed = list(dirs.items())
+		for i, t in enumerate(dirs.items()):
+			try:
+				int(t[1][F_ACCESS_COUNT])
+			except ValueError:
+				fixed[i][1][F_ACCESS_COUNT] = '0'
+
+			try:
+				int(t[1][F_ACCESS_TIME])
+			except ValueError:
+				fixed[i][1][F_ACCESS_TIME] = '0'
+
+		print >> sys.stderr, "Cleaning done."
+		return dict(fixed)
+
 
 def acquire_lock(goto_path):
 	""" Lock a special lock file in the same directory as the goto file
@@ -185,8 +218,13 @@ def read_goto_file():
 	except IOError as e:
 		fatal("Something went wrong while opening the file '%s': %s" % (e, path))
 
-	return dict(tuples)
+	dirs = dict(tuples)
 
+	if deprecated.goto_needs_number_cleanup(dirs):
+		dirs = deprecated.goto_number_cleanup(dirs)
+		write_goto_file(dirs)
+
+	return dirs
 
 def write_goto_file(dirs):
 	path = goto_file_path()
@@ -258,7 +296,11 @@ def add_directory(name, path, soft=False):
 	except OSError:
 		fatal('Path is not accessible: %s' % (path,))
 
-	dirs[name] = [soft and resolve_softlink(path) or os.path.abspath(path)]
+	path = [soft and resolve_softlink(path) or os.path.abspath(path)]
+
+	dirs[name][F_PATH] = path
+	dirs[name][F_ACCESS_COUNT] = 0
+	dirs[name][F_ACCESS_TIME] = 0
 
 	write_goto_file(dirs)
 
