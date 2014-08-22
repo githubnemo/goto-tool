@@ -14,19 +14,17 @@ except ImportError:
 	xdg_config_home = os.path.expanduser('~/.config')
 
 
-"""
-	lockfile that is initialized in acquire_lock() but needs to be global
+""" lockfile that is initialized in acquire_lock() but needs to be global
 	so that the GC does not clean this up and close the file prematurely.
 	If that would happen, the lock would be released too soon.
 """
 lockfile = None
 
-"""
-Current fields are:
+""" Current fields are:
 
 	key, path, access date, access count
 
-Therefore the elements are:
+	Therefore the elements are:
 
 	path, access date, access count
 """
@@ -89,12 +87,11 @@ class deprecated(object):
 
 	@classmethod
 	def read_goto_database(cls):
-		"""
-		Return stored directories as dictionary. The key is the name of the
-		entry, the value is a dict of properties.
+		""" Return stored directories as dictionary. The key is the name of the
+			entry, the value is a dict of properties.
 
-		Example:
-		{'ex1':{'name': 'ex1', 'path':'/home/me/ex1', 'last_access': 11223344, 'usage_count': 10}}
+			Example:
+			{'ex1':{'name': 'ex1', 'path':'/home/me/ex1', 'last_access': 11223344, 'usage_count': 10}}
 		"""
 		con = deprecated.open_database()
 
@@ -224,13 +221,12 @@ def acquire_lock(goto_path):
 
 
 def read_goto_file():
-	"""
-	Return stored directories as dictionary. The key is the name of the
-	entry, the value is a list of properties ordered like this:
-	path, access date, access count.
+	"""	Return stored directories as dictionary. The key is the name of the
+		entry, the value is a list of properties ordered like this:
+		path, access date, access count.
 
-	Example:
-	{'ex1':['/home/me/ex1','11223344','10']}
+		Example:
+		{'ex1':['/home/me/ex1','11223344','10']}
 	"""
 	path = goto_file_path()
 
@@ -312,8 +308,9 @@ def lookup_entry(path):
 
 
 def resolve_softlink(path):
-	""" make an attempt to get the symlink from the current dir
-	if wanted. If that attempt fails, just return the path. """
+	""" Make an attempt to get the symlink from the current dir
+		if wanted. If that attempt fails, just return the path.
+	"""
 	if os.path.islink(path):
 		return os.path.abspath(path)
 	if path == '.':
