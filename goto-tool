@@ -427,6 +427,34 @@ def list_directories():
 	print "\n".join(["%s: %s" % (key,row[F_PATH]) for (key,row) in dirs.items()])
 
 
+def quantil(lst, p, elem=lambda l,i: l[i]):
+	p = max(min(p, 1), 0)
+	pi = int(p * len(lst))
+	if len(lst) % 2 == 0:
+		return (elem(lst, pi) + elem(lst, pi + 1)) / 2
+	return elem(pi)
+
+
+def clean_directories(force=False):
+	# lowest quantil of usage counts and time
+	dirs = read_goto_file()
+
+	counts = sorted(dirs.items(), key=lambda e: e[1][F_ACCESS_COUNT])
+	dates = sorted(dirs.items(), key=lambda e: e[1][F_ACCESS_TIME])
+
+	clbound = quantil(counts, 0.25, lambda l,i: l[i][1][F_ACCESS_COUNT])
+	dlbound = quantil(dates, 0.25, lambda l,i: l[i][1][F_ACCESS_TIME])
+
+	unused = {name for name, props in counts if props[F_ACCESS_COUNT] <= clbound and props[F_ACCESS_TIME] <= dlbound}
+
+	if not force:
+		print "According to age and usage you would probably want to remove (use -f):"
+		print "\n".join(unused)
+	else:
+		for name in unused:
+			rm_directory(name)
+
+
 def fatal(msg):
 	print >> sys.stderr, msg
 
@@ -471,6 +499,9 @@ def main():
 
 	elif len(argv) == 2 and argv[1] == "path":
 		print goto_file_path()
+
+	elif len(argv) >= 2 and argv[1] == "clean":
+		clean_directories(argv[2:3] == ['-f'])
 
 	else:
 		usage()
