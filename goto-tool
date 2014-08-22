@@ -185,17 +185,17 @@ def read_goto_file():
 
 
 def write_goto_file(dirs):
-		path = goto_file_path()
+	path = goto_file_path()
 
-		if not os.path.exists(os.path.dirname(path)):
-				os.makedirs(os.path.dirname(path))
+	if not os.path.exists(os.path.dirname(path)):
+			os.makedirs(os.path.dirname(path))
 
-		data = "\n".join(["%s: %s" % (key, FIELD_SEPARATOR.join(props)) for (key,props) in dirs.items()])
+	data = "\n".join(["%s: %s" % (key, FIELD_SEPARATOR.join(props)) for (key,props) in dirs.items()])
 
-		try:
-				file(path, 'w').write(data)
-		except IOError as e:
-				fatal("Something went wrong while writing: %s" % (e))
+	try:
+			file(path, 'w').write(data)
+	except IOError as e:
+			fatal("Something went wrong while writing: %s" % (e))
 
 
 def print_directory_by_name(dirname):
