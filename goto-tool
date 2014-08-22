@@ -164,7 +164,9 @@ class deprecated(object):
 			try:
 				int(t[1][F_ACCESS_TIME])
 			except ValueError:
-				fixed[i][1][F_ACCESS_TIME] = '0'
+				# Use the timestamp when the 'use' parameter was introduced
+				# to goget/goto. The shortcut was obviously not used since then.
+				fixed[i][1][F_ACCESS_TIME] = '1329088549'
 
 		print >> sys.stderr, "Cleaning done."
 		return dict(fixed)
