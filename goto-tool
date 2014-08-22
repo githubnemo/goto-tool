@@ -36,29 +36,6 @@ ELEMENTS_PER_ROW = 3	# Attributes per row (everything but the name)
 
 (F_PATH, F_ACCESS_TIME, F_ACCESS_COUNT) = range(ELEMENTS_PER_ROW)
 
-def goto_file_path():
-	try:
-		return os.path.abspath(os.environ['GOTO_FILE'])
-	except KeyError:
-		return os.path.join(xdg_config_home, 'goto_favourites.list')
-
-
-def escape_split(what, sep, splits):
-	return re.split(r"(?<!\\)" + sep, what, splits)
-
-
-def fill_list(l, count):
-	""" Return a list with contents from `l` that has at least `count`
-		string elements.
-	"""
-	if len(l) >= count:
-		return l
-
-	diff = count - len(l)
-
-	return l + ([''] * diff)
-
-
 # Deprecated import
 import sqlite3
 
@@ -172,6 +149,63 @@ class deprecated(object):
 		return dict(fixed)
 
 
+
+
+
+def goto_file_path():
+	try:
+		return os.path.abspath(os.environ['GOTO_FILE'])
+	except KeyError:
+		return os.path.join(xdg_config_home, 'goto_favourites.list')
+
+
+def escape_split(what, sep, splits):
+	return re.split(r"(?<!\\)" + sep, what, splits)
+
+
+def vmap(lineno, raw_tuple):
+	""" Map values from the raw_tuple to their respective type
+		and makes sure that each tuple is in the correct format.
+		At the moment syntax errors are considered fatal.
+	"""
+	stripped = map(lambda e: e.strip(), raw_tuple)
+
+	# Number of properties + name
+	if len(raw_tuple) != ELEMENTS_PER_ROW + 1:
+		fatal("Syntax error on line {0}: {1} elements detected.".format(lineno, len(raw_tuple)))
+
+	data = [''] * ELEMENTS_PER_ROW
+
+	data[F_PATH] = stripped[1 + F_PATH]
+
+	try:
+		data[F_ACCESS_TIME] = float(stripped[1 + F_ACCESS_TIME])
+	except ValueError:
+		fatal("Access time of entry on line {0} could not be read.".format(lineno))
+
+	try:
+		data[F_ACCESS_COUNT] = int(stripped[1 + F_ACCESS_COUNT])
+	except ValueError:
+		fatal("Access count of entry on line {0} could not be read.".format(lineno))
+
+	return stripped[0], data
+
+
+def rvmap(props):
+	""" Do the reverse of `vmap` by converting the respective properties from
+		their types to a string. This enables us to find programming errors
+		faster and prevents implicit conversion errors.
+	"""
+	# props[F_PATH] does not need to be converted.
+	if type(F_ACCESS_COUNT) != int:
+		fatal("Programming error: Non-integer access count detected.")
+
+	if type(F_ACCESS_TIME) != float and type(F_ACCESS_TIME) != int:
+		fatal("Programming error: Non-float or integer access time detected.")
+
+	return [str(p) for p in props]
+
+
 def acquire_lock(goto_path):
 	""" Lock a special lock file in the same directory as the goto file
 		resides in. If this file does not exist, it will be created.
@@ -187,6 +221,7 @@ def acquire_lock(goto_path):
 	lockfile_path = os.path.join(os.path.dirname(goto_path), 'goto.lock')
 	lockfile = open(lockfile_path, 'w')
 	fcntl.lockf(lockfile.fileno(), fcntl.LOCK_EX)
+
 
 def read_goto_file():
 	"""
@@ -210,13 +245,9 @@ def read_goto_file():
 	except OSError:
 		return {}
 
-	def smap(x):
-		y = map(lambda e: e.strip(), x)
-
-		return y[0], fill_list(y[1:], ELEMENTS_PER_ROW)
-
 	try:
-		tuples = (smap(escape_split(n, FIELD_SEPARATOR, ELEMENTS_PER_ROW)) for n in file(path, 'r').readlines())
+		tuples = (vmap(i, escape_split(n, FIELD_SEPARATOR, ELEMENTS_PER_ROW))
+					for i, n in enumerate(file(path, 'r').readlines()))
 	except IOError as e:
 		fatal("Something went wrong while opening the file '%s': %s" % (e, path))
 
@@ -228,13 +259,14 @@ def read_goto_file():
 
 	return dirs
 
+
 def write_goto_file(dirs):
 	path = goto_file_path()
 
 	if not os.path.exists(os.path.dirname(path)):
 			os.makedirs(os.path.dirname(path))
 
-	data = "\n".join(["%s: %s" % (key, FIELD_SEPARATOR.join(props)) for (key,props) in dirs.items()])
+	data = "\n".join(["%s: %s" % (key, FIELD_SEPARATOR.join(rvmap(props))) for (key,props) in dirs.items()])
 
 	try:
 			file(path, 'w').write(data)
@@ -256,10 +288,10 @@ def mark_entry_as_used(dirname):
 	if not dirs.has_key(dirname):
 		fatal("Entry '%s' not found." % (dirname,))
 
-	count = int(dirs[dirname][F_ACCESS_COUNT] or 0) + 1
+	count = dirs[dirname][F_ACCESS_COUNT] + 1
 
-	dirs[dirname][F_ACCESS_TIME] = str(time.time())
-	dirs[dirname][F_ACCESS_COUNT] = str(count)
+	dirs[dirname][F_ACCESS_TIME] = time.time()
+	dirs[dirname][F_ACCESS_COUNT] = count
 
 	write_goto_file(dirs)
 
@@ -319,7 +351,6 @@ def rm_directory(name):
 		fatal("Entry '%s' does not exist." % (name,))
 
 	write_goto_file(dirs)
-
 	print "Entry '%s' removed." % (name,)
 
 
