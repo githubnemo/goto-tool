@@ -145,6 +145,10 @@ def acquire_lock(goto_path):
 	"""
 	global lockfile # prevent lockfile from being GCed after this function
 
+	# Do nothing in case the lock is already acquired.
+	if lockfile:
+		return
+
 	lockfile_path = os.path.join(os.path.dirname(goto_path), 'goto.lock')
 	lockfile = open(lockfile_path, 'w')
 	fcntl.lockf(lockfile.fileno(), fcntl.LOCK_EX)
