@@ -298,11 +298,12 @@ def add_directory(name, path, soft=False):
 	except OSError:
 		fatal('Path is not accessible: %s' % (path,))
 
-	path = [soft and resolve_softlink(path) or os.path.abspath(path)]
+	path = soft and resolve_softlink(path) or os.path.abspath(path)
 
+	dirs[name] = [''] * ELEMENTS_PER_ROW
 	dirs[name][F_PATH] = path
-	dirs[name][F_ACCESS_COUNT] = 0
-	dirs[name][F_ACCESS_TIME] = 0
+	dirs[name][F_ACCESS_COUNT] = '0'
+	dirs[name][F_ACCESS_TIME] = '0'
 
 	write_goto_file(dirs)
 
