@@ -66,6 +66,9 @@ class deprecated(object):
 			migrated[key][F_ACCESS_TIME] = unicode(row[DB_F_ACCESS_TIME])
 			migrated[key][F_ACCESS_COUNT] = unicode(row[DB_F_ACCESS_COUNT])
 
+		if deprecated.goto_needs_number_cleanup(migrated):
+			migrated = deprecated.goto_number_cleanup(migrated)
+
 		write_goto_file(migrated)
 		os.unlink(deprecated.goto_database_path())
 		print >> sys.stderr, "Migration completed successfully."
@@ -111,7 +114,7 @@ class deprecated(object):
 		return dict([ (r['name'], r) for r in rows ])
 
 	@classmethod
-	def goto_needs_number_cleanup(cls, dirs):
+	def goto_dirs_need_number_cleanup(cls, dirs):
 		""" The directory tuples were not initialized properly and the
 			fields for access time and access count may have missing, weird
 			and wrong values. Detect if this is the case.
@@ -119,34 +122,92 @@ class deprecated(object):
 		for _, t in dirs.items():
 			try:
 				int(t[F_ACCESS_COUNT])
-				int(t[F_ACCESS_TIME])
+				float(t[F_ACCESS_TIME])
 			except ValueError:
 				return True
 		return False
 
 	@classmethod
-	def goto_number_cleanup(cls, dirs):
-		""" Apply what is described in goto_needs_number_cleanup. """
-		print >> sys.stderr, "Your goto file needs some cleaning. Cleaning up."
+	def goto_dirs_number_cleanup(cls, dirs):
+		""" Apply what is described in goto_dirs_need_number_cleanup. """
 		fixed = list(dirs.items())
 		for i, t in enumerate(dirs.items()):
+			modified = False
+
 			try:
 				int(t[1][F_ACCESS_COUNT])
 			except ValueError:
-				fixed[i][1][F_ACCESS_COUNT] = '0'
+				fixed[i][1][F_ACCESS_COUNT] = 0
+				modified = True
 
 			try:
-				int(t[1][F_ACCESS_TIME])
+				float(t[1][F_ACCESS_TIME])
 			except ValueError:
 				# Use the timestamp when the 'use' parameter was introduced
 				# to goget/goto. The shortcut was obviously not used since then.
-				fixed[i][1][F_ACCESS_TIME] = '1329088549'
+				fixed[i][1][F_ACCESS_TIME] = 1329088549.0
+				modified = True
 
-		print >> sys.stderr, "Cleaning done."
+			if modified:
+				print >> sys.stderr, "Cleaning entry '{}'".format(t[0])
+
 		return dict(fixed)
 
+	@classmethod
+	def fill_list(cls, l, count):
+		   """ Return a list with contents from `l` that has at least `count`
+				   string elements.
+		   """
+		   if len(l) >= count:
+				   return l
 
+		   diff = count - len(l)
 
+		   return l + ([''] * diff)
+
+	@classmethod
+	def read_goto_file(cls):
+		path = goto_file_path()
+
+		# Acquire goto file lock
+		acquire_lock(path)
+
+		if deprecated.goto_needs_migration():
+			deprecated.migrate_to_file()
+
+		try:
+			os.stat(path)
+		except OSError:
+			return {}
+
+		def smap(x):
+			y = map(lambda e: e.strip(), x)
+
+			return y[0], deprecated.fill_list(y[1:], ELEMENTS_PER_ROW)
+
+		try:
+			tuples = (smap(escape_split(n, FIELD_SEPARATOR, ELEMENTS_PER_ROW)) for n in file(path, 'r').readlines())
+		except IOError as e:
+			fatal("Something went wrong while opening the file '%s': %s" % (e, path))
+
+		dirs = dict(tuples)
+
+		return dirs
+
+	@classmethod
+	def goto_file_number_cleanup_if_necessary(cls):
+		""" Read the file using the deprecated, permissive read method
+			and check if that file has wrong data in count and access time
+			fields. These are then repaired and the file is written.
+		"""
+		dirs = deprecated.read_goto_file()
+
+		if deprecated.goto_dirs_need_number_cleanup(dirs):
+			print >> sys.stderr, "Your goto file needs some cleaning. Cleaning up."
+			dirs = deprecated.goto_dirs_number_cleanup(dirs)
+			print >> sys.stderr, "Cleaning done."
+
+			write_goto_file(dirs)
 
 
 def goto_file_path():
@@ -241,19 +302,16 @@ def read_goto_file():
 	except OSError:
 		return {}
 
+	# Attempt to do a cleanup. Will return early if nothing to cleanup.
+	deprecated.goto_file_number_cleanup_if_necessary()
+
 	try:
-		tuples = (vmap(i, escape_split(n, FIELD_SEPARATOR, ELEMENTS_PER_ROW))
+		tuples = (vmap(i+1, escape_split(n, FIELD_SEPARATOR, ELEMENTS_PER_ROW))
 					for i, n in enumerate(file(path, 'r').readlines()))
 	except IOError as e:
 		fatal("Something went wrong while opening the file '%s': %s" % (e, path))
 
-	dirs = dict(tuples)
-
-	if deprecated.goto_needs_number_cleanup(dirs):
-		dirs = deprecated.goto_number_cleanup(dirs)
-		write_goto_file(dirs)
-
-	return dirs
+	return dict(tuples)
 
 
 def write_goto_file(dirs):
