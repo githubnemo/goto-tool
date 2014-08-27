@@ -439,6 +439,10 @@ def clean_directories(force=False):
 	# lowest quantil of usage counts and time
 	dirs = read_goto_file()
 
+	if len(dirs) == 0:
+		# Nothing to clean, we're done.
+		return
+
 	counts = sorted(dirs.items(), key=lambda e: e[1][F_ACCESS_COUNT])
 	dates = sorted(dirs.items(), key=lambda e: e[1][F_ACCESS_TIME])
 
