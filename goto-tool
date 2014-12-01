@@ -432,7 +432,7 @@ def quantil(lst, p, elem=lambda l,i: l[i]):
 	pi = int(p * len(lst))
 	if len(lst) % 2 == 0:
 		return (elem(lst, pi) + elem(lst, pi + 1)) / 2
-	return elem(pi)
+	return elem(lst, pi)
 
 
 def clean_directories(force=False):
