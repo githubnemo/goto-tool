@@ -9,11 +9,12 @@ gotoSubdir() {
   if (( CURRENT <= 2 )); then
     return
   fi
+
   goto-tool get "${words[2]}"
 }
 
 _arguments  "1: :(`gotoTargets`)"\
-            "2: directory:_directories -W \"$(gotoSubdir)\""
+            "2: directory:_files -/ -W \"$(gotoSubdir)\""
 
 # Local Variables:
 # mode: Shell-Script
