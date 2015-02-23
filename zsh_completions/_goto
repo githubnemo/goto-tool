@@ -14,7 +14,7 @@ gotoSubdir() {
 }
 
 _arguments  "1: :(`gotoTargets`)"\
-            "2: directory:_files -/ -W \"$(gotoSubdir)\""
+            "2:: directory:_files -/ -W \"$(gotoSubdir)\""
 
 # Local Variables:
 # mode: Shell-Script
