@@ -45,24 +45,16 @@ Using goto directories with other commands:
 	... editing file foo/bar.c in projects directory ...
 
 
-## Setup
+## Installation
 
-Put the `goto-tool` python script into your `~/bin` folder or some
-other suitable folder in your `$PATH` and make it executable.
+Clone this repository into a folder of your choosing, e.g.
 
-	cp goto-tool ~/bin
-	chmod u+x ~/bin/goto-tool
+	cd ~/.local/
+	git clone https://github.com/githubnemo/goto-tool.git
 
-After that, edit your shell configuration as described below.
+Then proceed and configure your shell as described below.
 
 ### Bash
-
-If you want to use tab completion, you'll need `bash_completion`.
-
-**Ubuntu/Debian** users have it already.
-
-For **Mac OS X**, you can find a detailled installation guide
-[here](http://superuser.com/a/288491).
 
 Add the following line at the end of your configuration file,
 for example `~/.bashrc`, to include the `goto.bash` file in your configuration:
@@ -77,6 +69,14 @@ include the `goto.completion` file in your `~/.bashrc` or `~/.bash_completion`
 on debian/ubuntu like this:
 
 	source ~/.local/goto-tool/goto.completion
+
+**Note**: you need `bash_completion` for tab completion to work.
+
+**Ubuntu/Debian** users have it already.
+
+For **Mac OS X**, you can find a detailled installation guide
+[here](http://superuser.com/a/288491).
+
 
 ### ZSH
 
