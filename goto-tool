@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import sys
 import os
 import re
@@ -50,7 +52,7 @@ class deprecated(object):
 
 	@classmethod
 	def migrate_to_file(cls):
-		print >> sys.stderr, "Migrating your previous SQLite3 database to file format."
+		print("Migrating your previous SQLite3 database to file format.", file=sys.stderr)
 		data = deprecated.read_goto_database()
 
 		DB_F_PATH = 'path'
@@ -71,7 +73,7 @@ class deprecated(object):
 
 		write_goto_file(migrated)
 		os.unlink(deprecated.goto_database_path())
-		print >> sys.stderr, "Migration completed successfully."
+		print("Migration completed successfully.", file=sys.stderr)
 
 	@classmethod
 	def goto_database_path(cls):
@@ -149,7 +151,7 @@ class deprecated(object):
 				modified = True
 
 			if modified:
-				print >> sys.stderr, "Cleaning entry '{}'".format(t[0])
+				print("Cleaning entry '{}'".format(t[0]), file=sys.stderr)
 
 		return dict(fixed)
 
@@ -181,12 +183,12 @@ class deprecated(object):
 			return {}
 
 		def smap(x):
-			y = map(lambda e: e.strip(), x)
+			y = list(map(lambda e: e.strip(), x))
 
 			return y[0], deprecated.fill_list(y[1:], ELEMENTS_PER_ROW)
 
 		try:
-			tuples = (smap(escape_split(n, FIELD_SEPARATOR, ELEMENTS_PER_ROW)) for n in file(path, 'r').readlines())
+			tuples = (smap(escape_split(n, FIELD_SEPARATOR, ELEMENTS_PER_ROW)) for n in open(path, 'r').readlines())
 		except IOError as e:
 			fatal("Something went wrong while opening the file '%s': %s" % (e, path))
 
@@ -203,9 +205,9 @@ class deprecated(object):
 		dirs = deprecated.read_goto_file()
 
 		if deprecated.goto_dirs_need_number_cleanup(dirs):
-			print >> sys.stderr, "Your goto file needs some cleaning. Cleaning up."
+			print("Your goto file needs some cleaning. Cleaning up.", file=sys.stderr)
 			dirs = deprecated.goto_dirs_number_cleanup(dirs)
-			print >> sys.stderr, "Cleaning done."
+			print("Cleaning done.", file=sys.stderr)
 
 			write_goto_file(dirs)
 
@@ -226,7 +228,7 @@ def vmap(lineno, raw_tuple):
 		and makes sure that each tuple is in the correct format.
 		At the moment syntax errors are considered fatal.
 	"""
-	stripped = map(lambda e: e.strip(), raw_tuple)
+	stripped = list(map(lambda e: e.strip(), raw_tuple))
 
 	# Number of properties + name
 	if len(raw_tuple) != ELEMENTS_PER_ROW + 1:
@@ -307,7 +309,7 @@ def read_goto_file():
 
 	try:
 		tuples = (vmap(i+1, escape_split(n, FIELD_SEPARATOR, ELEMENTS_PER_ROW))
-					for i, n in enumerate(file(path, 'r').readlines()))
+					for i, n in enumerate(open(path, 'r').readlines()))
 	except IOError as e:
 		fatal("Something went wrong while opening the file '%s': %s" % (e, path))
 
@@ -323,7 +325,7 @@ def write_goto_file(dirs):
 	data = "\n".join(["%s: %s" % (key, FIELD_SEPARATOR.join(rvmap(props))) for (key,props) in dirs.items()])
 
 	try:
-			file(path, 'w').write(data)
+			open(path, 'w').write(data)
 	except IOError as e:
 			fatal("Something went wrong while writing: %s" % (e))
 
@@ -331,7 +333,7 @@ def write_goto_file(dirs):
 def print_directory_by_name(dirname):
 	dirs = read_goto_file()
 	try:
-		print dirs[dirname][F_PATH]
+		print(dirs[dirname][F_PATH])
 	except KeyError:
 		fatal("Entry '%s' not found." % (dirname,))
 
@@ -339,7 +341,7 @@ def print_directory_by_name(dirname):
 def mark_entry_as_used(dirname):
 	dirs = read_goto_file()
 
-	if not dirs.has_key(dirname):
+	if not dirname in dirs:
 		fatal("Entry '%s' not found." % (dirname,))
 
 	count = dirs[dirname][F_ACCESS_COUNT] + 1
@@ -349,7 +351,7 @@ def mark_entry_as_used(dirname):
 
 	write_goto_file(dirs)
 
-	print "Entry '%s' marked as used." % (dirname,)
+	print("Entry '%s' marked as used." % (dirname,))
 
 
 def lookup_entry(path):
@@ -359,10 +361,10 @@ def lookup_entry(path):
 	if len(matches) == 0:
 		fatal("No entry for path '{}' found.".format(path))
 
-	print "Path '{}' matches the following entries:".format(path)
+	print("Path '{}' matches the following entries:".format(path))
 
 	for match in matches:
-		print match
+		print(match)
 
 
 def resolve_softlink(path):
@@ -394,7 +396,7 @@ def add_directory(name, path, soft=False):
 
 	write_goto_file(dirs)
 
-	print "Entry '%s' added, points to '%s'." % (name, path)
+	print("Entry '%s' added, points to '%s'." % (name, path))
 
 
 def rm_directory(name):
@@ -406,7 +408,7 @@ def rm_directory(name):
 		fatal("Entry '%s' does not exist." % (name,))
 
 	write_goto_file(dirs)
-	print "Entry '%s' removed." % (name,)
+	print("Entry '%s' removed." % (name,))
 
 
 def mv_directory(oldName, newName):
@@ -419,12 +421,12 @@ def mv_directory(oldName, newName):
 		fatal("Entry '%s' does not exist." % (oldName,))
 
 	write_goto_file(dirs)
-	print "Entry '%s' was rennamed to '%s'." % (oldName, newName)
+	print("Entry '%s' was rennamed to '%s'." % (oldName, newName))
 
 
 def list_directories():
 	dirs = read_goto_file()
-	print "\n".join(["%s: %s" % (key,row[F_PATH]) for (key,row) in dirs.items()])
+	print("\n".join(["%s: %s" % (key,row[F_PATH]) for (key,row) in dirs.items()]))
 
 
 def quantil(lst, p, elem=lambda l,i: l[i]):
@@ -452,15 +454,15 @@ def clean_directories(force=False):
 	unused = {name for name, props in counts if props[F_ACCESS_COUNT] <= clbound and props[F_ACCESS_TIME] <= dlbound}
 
 	if not force:
-		print "According to age and usage you would probably want to remove (use -f):"
-		print "\n".join(unused)
+		print("According to age and usage you would probably want to remove (use -f):")
+		print("\n".join(unused))
 	else:
 		for name in unused:
 			rm_directory(name)
 
 
 def fatal(msg):
-	print >> sys.stderr, msg
+	print(msg, file=sys.stderr)
 
 	# Use 2 instead of 1 to distingush between exceptional exit (1) and
 	# controlled fatal exit (2).
@@ -502,7 +504,7 @@ def main():
 		list_directories()
 
 	elif len(argv) == 2 and argv[1] == "path":
-		print goto_file_path()
+		print(goto_file_path())
 
 	elif len(argv) >= 2 and argv[1] == "clean":
 		clean_directories(argv[2:3] == ['-f'])
