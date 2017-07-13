@@ -1,16 +1,22 @@
 # To be sourced in your .bashrc or .zshrc
 
-if [ -n "$ZSH_NAME" ]; then
-	_goto_tool_path=$(dirname $0)
-elif [ -n "$BASH" ]; then
-	_goto_tool_path=$(dirname ${BASH_SOURCE[0]})
-else
-	echo 'Unknown shell, cannot infer goto-tool path automatically.'
-	echo 'Please set your PATH so that the goto-tool script is accessible.'
-	_goto_tool_path=$(dirname `which goto-tool`)
+if [ -z "$_goto_tool_path" ]; then
+	if [ -n "$ZSH_NAME" ]; then
+		_goto_tool_path=$(dirname $0)
+	elif [ -n "$BASH" ]; then
+		_goto_tool_path=$(dirname ${BASH_SOURCE[0]})
+	else
+		echo 'Unknown shell, cannot infer goto-tool path automatically.'
+		echo 'Please set your PATH so that the goto-tool script is accessible.'
+		_goto_tool_path=$(dirname `which goto-tool`)
+	fi
+
+	export _goto_tool_path
 fi
 
-goto-tool() {
+alias goto-tool=goto_tool_fn
+
+goto_tool_fn() {
 	${_goto_tool_path}/goto-tool $@
 }
 
